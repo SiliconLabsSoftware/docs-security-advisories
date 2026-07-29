@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Security Advisories Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    input {
+      margin-right: 1rem;
+      padding: 0.4rem;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.6rem;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Security Advisories Dashboard</h1>
+
+<div>
+  <input type="text" id="advisoryFilter" placeholder="Filter by Advisory">
+  <input type="text" id="titleFilter" placeholder="Filter by Title">
+  <input type="text" id="cveFilter" placeholder="Filter by CVE ID">
+  <input type="text" id="productFilter" placeholder="Filter by Product">
+  <input type="text" id="fixFilter" placeholder="Filter by Fix Version">
+  <input type="text" id="flagsFilter" placeholder="Filter by Flags">
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Advisory</th>
+      <th>Title</th>
+      <th>CVE ID</th>
+      <th>Product</th>
+      <th>Fix Version</th>
+      <th>Flags</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+  let advisories = [];
+
+  async function loadData() {
+    const response = await fetch('dashboard.json');
+    advisories = await response.json();
+    renderTable(advisories);
+  }
+
+  function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    data.forEach(item => {
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td>
+            <a href="https://github.com/silabs-bethorel/Test-Advisories/blob/main/Advisories/${item.advisory}.md" target="_blank">${item.advisory}</a>
+        </td>
+        <td>${item.title}</td>
+        <td>
+        ${item.cve_url 
+            ? `<a href="${item.cve_url}" target="_blank">${item.cve}</a>` 
+            : item.cve}
+        </td>
+        <td>${item.product}</td>
+        <td>${item.version}</td>
+        <td>${item.flags}</td>
+      `;
+
+      tbody.appendChild(row);
+    });
+  }
+
+  function applyFilters() {
+    const advisory = document.getElementById('advisoryFilter').value.toLowerCase();
+    const title = document.getElementById('titleFilter').value.toLowerCase();
+    const cve = document.getElementById('cveFilter').value.toLowerCase();
+    const product = document.getElementById('productFilter').value.toLowerCase();
+    const fix = document.getElementById('fixFilter').value.toLowerCase();
+    const flags = document.getElementById('flagsFilter').value.toLowerCase();
+
+    const filtered = advisories.filter(item =>
+      item.advisory.toLowerCase().includes(advisory) &&
+      item.title.toLowerCase().includes(title) &&
+      item.cve.toLowerCase().includes(cve) &&
+      item.product.toLowerCase().includes(product) &&
+      item.version.toLowerCase().includes(fix) &&
+      item.flags.toLowerCase().includes(flags)
+    );
+
+    renderTable(filtered);
+  }
+
+  document.getElementById('advisoryFilter').addEventListener('input', applyFilters);
+  document.getElementById('titleFilter').addEventListener('input', applyFilters);
+  document.getElementById('cveFilter').addEventListener('input', applyFilters);
+  document.getElementById('productFilter').addEventListener('input', applyFilters);
+  document.getElementById('fixFilter').addEventListener('input', applyFilters);
+  document.getElementById('flagsFilter').addEventListener('input', applyFilters);
+
+  loadData();
+</script>
+
+</body>
+</html>
