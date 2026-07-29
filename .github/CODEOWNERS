@@ -1,0 +1,4 @@
+# CODEOWNERS for the Silicon Labs Security Advisory repo
+
+# This repo is owned by the Silicon Labs PSIRT
+*       @SiliconLabsSoftware/PSIRT
