@@ -1,0 +1,39 @@
+name: Update Advisory Dashboard
+
+on:
+  push:
+    paths:
+      - "Advisories/**"
+      - "scripts/**"
+    branches-ignore:
+      - main
+
+permissions:
+  contents: write
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+          
+      - name: Generate MD5 data
+        run: python scripts/gen_md5.py
+
+      - name: Generate dashboard
+        run: python scripts/gen_dashboard.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/*
+          git add Advisories/*/*.md5
+          git commit -m "Update dashboard and MD5 files" || exit 0
+          git push
