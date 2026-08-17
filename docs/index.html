@@ -1,127 +1,916 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Security Advisories Dashboard</title>
   <style>
+    :root {
+      --sl-red: #d71920;
+      --sl-red-dark: #b61218;
+      --sl-black: #121212;
+      --sl-text: #25282c;
+      --sl-muted: #6a7178;
+      --sl-border: #dde1e5;
+      --sl-border-strong: #c9ced4;
+      --sl-surface: #ffffff;
+      --sl-background: #f4f5f6;
+      --sl-soft: #f8f9fa;
+      --sl-link: #b5121b;
+      --radius-sm: 5px;
+      --radius-md: 10px;
+      --shadow-card: 0 2px 10px rgba(18, 18, 18, 0.06);
+      --content-max: 1680px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: light;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
+      margin: 0;
+      background: var(--sl-background);
+      color: var(--sl-text);
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.45;
     }
+
+    a {
+      color: var(--sl-link);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid rgba(215, 25, 32, 0.28);
+      outline-offset: 2px;
+    }
+
+    .app-header {
+      position: relative;
+      overflow: hidden;
+      background: var(--sl-black);
+      color: white;
+      border-top: 5px solid var(--sl-red);
+    }
+
+    .app-header::after {
+      content: "";
+      position: absolute;
+      right: -72px;
+      top: -110px;
+      width: 360px;
+      height: 360px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 50%;
+      box-shadow:
+        58px 20px 0 -1px rgba(18, 18, 18, 1),
+        58px 20px 0 0 rgba(255, 255, 255, 0.08),
+        116px 40px 0 -1px rgba(18, 18, 18, 1),
+        116px 40px 0 0 rgba(255, 255, 255, 0.05);
+      pointer-events: none;
+    }
+
+    .header-inner,
+    .content {
+      width: min(var(--content-max), calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      position: relative;
+      z-index: 1;
+      padding: 28px 0 30px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: #d8dadd;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
     h1 {
-      margin-bottom: 1rem;
+      margin: 0;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      line-height: 1.08;
+      letter-spacing: -0.025em;
     }
-    input {
-      margin-right: 1rem;
-      padding: 0.4rem;
+
+    .subtitle {
+      max-width: 720px;
+      margin: 10px 0 0;
+      color: #c6c9cd;
+      font-size: 0.98rem;
     }
-    table {
-      border-collapse: collapse;
+
+    .content {
+      padding: 26px 0 48px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      min-height: 92px;
+      padding: 17px 18px;
+      background: var(--sl-surface);
+      border: 1px solid var(--sl-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+    }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--sl-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 1.55rem;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+    }
+
+    .panel {
+      background: var(--sl-surface);
+      border: 1px solid var(--sl-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+    }
+
+    .filter-panel {
+      margin-bottom: 16px;
+      padding: 18px;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .panel-heading h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .result-count {
+      color: var(--sl-muted);
+      font-size: 0.88rem;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .filter-field {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-field label {
+      color: #454b52;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    input[type="text"] {
       width: 100%;
-      margin-top: 1rem;
+      min-height: 40px;
+      padding: 8px 11px;
+      border: 1px solid var(--sl-border-strong);
+      border-radius: var(--radius-sm);
+      background: white;
+      color: var(--sl-text);
+      font: inherit;
+      font-size: 0.9rem;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
     }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 0.6rem;
+
+    input[type="text"]::placeholder {
+      color: #9aa0a6;
+    }
+
+    input[type="text"]:hover {
+      border-color: #aeb4ba;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--sl-red);
+      box-shadow: 0 0 0 3px rgba(215, 25, 32, 0.08);
+      outline: none;
+    }
+
+    .advanced-filters {
+      margin-top: 14px;
+      border-top: 1px solid var(--sl-border);
+      padding-top: 12px;
+    }
+
+    .advanced-filters summary {
+      width: fit-content;
+      cursor: pointer;
+      color: var(--sl-link);
+      font-size: 0.86rem;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .advanced-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--sl-border);
+    }
+
+    .toolbar-left {
+      min-width: 0;
+    }
+
+    .toolbar-title {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 750;
+    }
+
+    .toolbar-meta {
+      margin-top: 2px;
+      color: var(--sl-muted);
+      font-size: 0.78rem;
+    }
+
+    .column-picker {
+      position: relative;
+    }
+
+    .column-picker summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 8px 11px;
+      border: 1px solid var(--sl-border-strong);
+      border-radius: var(--radius-sm);
+      background: white;
+      color: var(--sl-text);
+      font-size: 0.84rem;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .column-picker summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .column-picker summary::after {
+      content: "▾";
+      margin-left: 8px;
+      color: var(--sl-muted);
+      font-size: 0.72rem;
+    }
+
+    .column-picker[open] summary::after {
+      content: "▴";
+    }
+
+    .column-menu {
+      position: absolute;
+      z-index: 20;
+      right: 0;
+      top: calc(100% + 8px);
+      display: grid;
+      width: min(360px, 82vw);
+      max-height: 360px;
+      overflow: auto;
+      gap: 9px;
+      padding: 14px;
+      background: white;
+      border: 1px solid var(--sl-border);
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(18, 18, 18, 0.14);
+    }
+
+    .column-menu label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #3d434a;
+      font-size: 0.85rem;
+      white-space: normal;
+    }
+
+    .column-menu input[type="checkbox"] {
+      accent-color: var(--sl-red);
+    }
+
+    .table-panel {
+      overflow: visible;
+    }
+
+    .table-container {
+      max-height: calc(100vh - 250px);
+      overflow: auto;
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: white;
+      font-size: 0.86rem;
+    }
+
+    th,
+    td {
+      padding: 11px 13px;
       text-align: left;
+      vertical-align: top;
     }
+
     th {
-      background-color: #f4f4f4;
+      position: sticky;
+      z-index: 4;
+      top: 0;
+      border-bottom: 1px solid #242424;
+      background: var(--sl-black);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 750;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    td {
+      border-bottom: 1px solid #eceef0;
+      color: #34383d;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody tr:hover td {
+      background: #fafafa;
+    }
+
+    th[data-key] {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th[data-key]::after {
+      content: "↕";
+      margin-left: 6px;
+      color: #777d83;
+      font-size: 0.8rem;
+    }
+
+    th[data-sort="asc"]::after {
+      content: "↑";
+      color: white;
+    }
+
+    th[data-sort="desc"]::after {
+      content: "↓";
+      color: white;
+    }
+
+    .cvss-string {
+      max-width: 330px;
+      color: #50565d;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.8rem;
+      overflow-wrap: anywhere;
+    }
+
+    .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      min-width: 66px;
+      justify-content: center;
+      padding: 3px 8px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .severity-critical {
+      background: #a70f16;
+      color: white;
+    }
+
+    .severity-high {
+      background: #f8d8da;
+      border-color: #ebafb3;
+      color: #8f1118;
+    }
+
+    .severity-medium {
+      background: #f3ede2;
+      border-color: #ded0b5;
+      color: #6e5522;
+    }
+
+    .severity-low {
+      background: #e9eef0;
+      border-color: #d2dadd;
+      color: #455057;
+    }
+
+    .severity-none,
+    .severity-unknown {
+      background: #f1f2f3;
+      border-color: #dfe2e5;
+      color: #656d75;
+    }
+
+    .empty-state {
+      padding: 42px 18px;
+      color: var(--sl-muted);
+      text-align: center;
+    }
+
+    .error-row td {
+      padding: 26px;
+      color: #8f1118;
+      font-weight: 650;
+    }
+
+    @media (max-width: 1200px) {
+      .filters,
+      .advanced-grid {
+        grid-template-columns: repeat(3, minmax(150px, 1fr));
+      }
+    }
+
+    @media (max-width: 800px) {
+      .header-inner,
+      .content {
+        width: min(100% - 28px, var(--content-max));
+      }
+
+      .header-inner {
+        padding: 22px 0 24px;
+      }
+
+      .content {
+        padding-top: 16px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .filters,
+      .advanced-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .toolbar {
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .stats,
+      .filters,
+      .advanced-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-heading,
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .column-picker summary {
+        width: 100%;
+        text-align: center;
+      }
+
+      .column-menu {
+        left: 0;
+        right: auto;
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
+  <header class="app-header">
+    <div class="header-inner">
+      <p class="eyebrow">Silicon Labs · Product Security</p>
+      <h1>Security Advisories</h1>
+      <p class="subtitle">Browse, filter, and review published security advisories across products, SDKs, CVEs, and impacted versions.</p>
+    </div>
+  </header>
 
-<h1>Security Advisories Dashboard</h1>
+  <main class="content">
+    <section class="stats" aria-label="Advisory summary">
+      <div class="stat-card">
+        <span class="stat-label">Total advisories</span>
+        <span class="stat-value" id="totalAdvisories">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Critical</span>
+        <span class="stat-value" id="criticalAdvisories">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">High</span>
+        <span class="stat-value" id="highAdvisories">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Latest release</span>
+        <span class="stat-value" id="latestRelease">—</span>
+      </div>
+    </section>
 
-<div>
-  <input type="text" id="advisoryFilter" placeholder="Filter by Advisory">
-  <input type="text" id="titleFilter" placeholder="Filter by Title">
-  <input type="text" id="cveFilter" placeholder="Filter by CVE ID">
-  <input type="text" id="productFilter" placeholder="Filter by Product">
-  <input type="text" id="fixFilter" placeholder="Filter by Fix Version">
-  <input type="text" id="flagsFilter" placeholder="Filter by Flags">
-</div>
+    <section class="panel filter-panel" aria-labelledby="filtersHeading">
+      <div class="panel-heading">
+        <h2 id="filtersHeading">Filters</h2>
+        <span class="result-count" id="resultCount" aria-live="polite">Loading advisories…</span>
+      </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Advisory</th>
-      <th>Title</th>
-      <th>CVE ID</th>
-      <th>Product</th>
-      <th>Fix Version</th>
-      <th>Flags</th>
-    </tr>
-  </thead>
-  <tbody id="tableBody"></tbody>
-</table>
+      <div class="filters">
+        <div class="filter-field">
+          <label for="advisoryFilter">Advisory</label>
+          <input type="text" id="advisoryFilter" placeholder="e.g. A-1234">
+        </div>
+        <div class="filter-field">
+          <label for="titleFilter">Title</label>
+          <input type="text" id="titleFilter" placeholder="Search title">
+        </div>
+        <div class="filter-field">
+          <label for="cveFilter">CVE ID</label>
+          <input type="text" id="cveFilter" placeholder="e.g. CVE-2026-…">
+        </div>
+        <div class="filter-field">
+          <label for="productFilter">Product</label>
+          <input type="text" id="productFilter" placeholder="Search product">
+        </div>
+        <div class="filter-field">
+          <label for="cvssSeverityFilter">CVSS Severity</label>
+          <input type="text" id="cvssSeverityFilter" placeholder="Critical, High, Medium…">
+        </div>
+      </div>
 
-<script>
-  let advisories = [];
+      <details class="advanced-filters">
+        <summary>Advanced filters</summary>
+        <div class="advanced-grid">
+          <div class="filter-field">
+            <label for="releaseDateFilter">Release Date</label>
+            <input type="text" id="releaseDateFilter" placeholder="Filter release date">
+          </div>
+          <div class="filter-field">
+            <label for="cvssStringFilter">CVSS String</label>
+            <input type="text" id="cvssStringFilter" placeholder="Filter CVSS vector">
+          </div>
+          <div class="filter-field">
+            <label for="versionFilter">Impacted Version</label>
+            <input type="text" id="versionFilter" placeholder="Filter impacted version">
+          </div>
+          <div class="filter-field">
+            <label for="mainSdkFilter">Main SDK</label>
+            <input type="text" id="mainSdkFilter" placeholder="Filter main SDK">
+          </div>
+          <div class="filter-field">
+            <label for="mainSdkVersionFilter">Main SDK Impacted Version</label>
+            <input type="text" id="mainSdkVersionFilter" placeholder="Filter SDK version">
+          </div>
+          <div class="filter-field">
+            <label for="flagsFilter">Flags</label>
+            <input type="text" id="flagsFilter" placeholder="Filter flags">
+          </div>
+        </div>
+      </details>
+    </section>
 
-  async function loadData() {
-    const response = await fetch('dashboard.json');
-    advisories = await response.json();
-    renderTable(advisories);
-  }
+    <section class="panel table-panel" aria-labelledby="tableHeading">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <h2 class="toolbar-title" id="tableHeading">Advisory catalog</h2>
+          <div class="toolbar-meta">Select a column heading to sort.</div>
+        </div>
 
-  function renderTable(data) {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '';
+        <details class="column-picker">
+          <summary>Columns</summary>
+          <div class="column-menu">
+            <label><input type="checkbox" data-column="advisory" checked> Advisory</label>
+            <label><input type="checkbox" data-column="release_date" checked> Release Date</label>
+            <label><input type="checkbox" data-column="title" checked> Title</label>
+            <label><input type="checkbox" data-column="cvss_severity" checked> CVSS Severity</label>
+            <label><input type="checkbox" data-column="cvss_string" checked> CVSS String</label>
+            <label><input type="checkbox" data-column="product" checked> Product</label>
+            <label><input type="checkbox" data-column="version" checked> Impacted Version</label>
+            <label><input type="checkbox" data-column="main_sdk" checked> Main SDK</label>
+            <label><input type="checkbox" data-column="main_sdk_impacted_version" checked> Main SDK Impacted Version</label>
+            <label><input type="checkbox" data-column="cve" checked> CVE ID</label>
+            <label><input type="checkbox" data-column="flags" checked> Flags</label>
+          </div>
+        </details>
+      </div>
 
-    data.forEach(item => {
-      const row = document.createElement('tr');
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="advisory">Advisory</th>
+              <th data-key="release_date">Release Date</th>
+              <th data-key="title">Title</th>
+              <th data-key="cvss_severity">CVSS Severity</th>
+              <th data-key="cvss_string">CVSS String</th>
+              <th data-key="product">Product</th>
+              <th data-key="version">Impacted Version</th>
+              <th data-key="main_sdk">Main SDK</th>
+              <th data-key="main_sdk_impacted_version">Main SDK Impacted Version</th>
+              <th data-key="cve">CVE ID</th>
+              <th data-key="flags">Flags</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-      row.innerHTML = `
-        <td>
-            <a href="https://github.com/silabs-bethorel/Test-Advisories/blob/main/Advisories/${item.advisory}.md" target="_blank">${item.advisory}</a>
-        </td>
-        <td>${item.title}</td>
-        <td>
-        ${item.cve_url 
-            ? `<a href="${item.cve_url}" target="_blank">${item.cve}</a>` 
-            : item.cve}
-        </td>
-        <td>${item.product}</td>
-        <td>${item.version}</td>
-        <td>${item.flags}</td>
-      `;
+  <script>
+    let advisories = [];
+    let filteredAdvisories = [];
+    let sortKey = 'release_date';
+    let sortDirection = 'desc';
 
-      tbody.appendChild(row);
+    const valueOrEmpty = value => value == null ? '' : String(value);
+    const displayValue = value => valueOrEmpty(value) || '—';
+
+    function escapeHtml(value) {
+      return valueOrEmpty(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function severityBadge(value) {
+      const label = displayValue(value);
+      const normalized = valueOrEmpty(value).trim().toLowerCase();
+      const allowed = ['critical', 'high', 'medium', 'low', 'none'];
+      const className = allowed.includes(normalized) ? normalized : 'unknown';
+      return `<span class="severity-badge severity-${className}">${escapeHtml(label)}</span>`;
+    }
+
+    async function loadData() {
+      const response = await fetch('dashboard.json');
+
+      if (!response.ok) {
+        throw new Error(`Unable to load dashboard.json: ${response.status}`);
+      }
+
+      advisories = await response.json();
+      filteredAdvisories = [...advisories];
+      updateSummary();
+      updateResultCount();
+      updateSortIndicators();
+      renderTable(sortData(filteredAdvisories));
+    }
+
+    function updateSummary() {
+      const normalizedSeverity = item => valueOrEmpty(item.cvss_severity).trim().toLowerCase();
+      document.getElementById('totalAdvisories').textContent = advisories.length.toLocaleString();
+      document.getElementById('criticalAdvisories').textContent = advisories.filter(item => normalizedSeverity(item) === 'critical').length.toLocaleString();
+      document.getElementById('highAdvisories').textContent = advisories.filter(item => normalizedSeverity(item) === 'high').length.toLocaleString();
+
+      const latest = [...advisories]
+        .map(item => valueOrEmpty(item.release_date).trim())
+        .filter(Boolean)
+        .sort((a, b) => b.localeCompare(a))[0];
+
+      document.getElementById('latestRelease').textContent = latest || '—';
+    }
+
+    function updateResultCount() {
+      const total = advisories.length;
+      const shown = filteredAdvisories.length;
+      document.getElementById('resultCount').textContent = shown === total
+        ? `${total.toLocaleString()} advisories`
+        : `${shown.toLocaleString()} of ${total.toLocaleString()} advisories`;
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td class="empty-state" colspan="11">No advisories match the current filters.</td></tr>';
+        return;
+      }
+
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        const advisory = escapeHtml(displayValue(item.advisory));
+        const cves = valueOrEmpty(item.cve).split(',').map(value => value.trim()).filter(Boolean);
+        const cveUrls = valueOrEmpty(item.cve_url).split(',').map(value => value.trim());
+        const cveLinks = cves.length
+          ? cves.map((cve, index) => {
+              const escapedCve = escapeHtml(cve);
+              const url = cveUrls[index];
+              return url
+                ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapedCve}</a>`
+                : escapedCve;
+            }).join(', ')
+          : '—';
+
+        const advisoryNumber = Number.parseInt(valueOrEmpty(item.advisory).replace(/^A-/, ''), 10);
+        const advisoryRangeStart = Math.floor(advisoryNumber / 100) * 100;
+        const advisoryRangeEnd = advisoryRangeStart + 99;
+        const advisoryFolder = `${advisoryRangeStart}-${advisoryRangeEnd}`;
+
+        row.innerHTML = `
+          <td data-key="advisory">
+            <a href="https://github.com/SiliconLabsSoftware/docs-security-advisories-staging/blob/main/Advisories/${advisoryFolder}/${advisory}.md" target="_blank" rel="noopener noreferrer">
+              ${advisory}
+            </a>
+          </td>
+          <td data-key="release_date">${escapeHtml(displayValue(item.release_date))}</td>
+          <td data-key="title">${escapeHtml(displayValue(item.title))}</td>
+          <td data-key="cvss_severity">${severityBadge(item.cvss_severity)}</td>
+          <td data-key="cvss_string" class="cvss-string">${escapeHtml(displayValue(item.cvss_string))}</td>
+          <td data-key="product">${escapeHtml(displayValue(item.product))}</td>
+          <td data-key="version">${escapeHtml(displayValue(item.version))}</td>
+          <td data-key="main_sdk">${escapeHtml(displayValue(item.main_sdk))}</td>
+          <td data-key="main_sdk_impacted_version">${escapeHtml(displayValue(item.main_sdk_impacted_version))}</td>
+          <td data-key="cve">${cveLinks}</td>
+          <td data-key="flags">${escapeHtml(displayValue(item.flags))}</td>
+        `;
+
+        tbody.appendChild(row);
+      });
+
+      updateColumnVisibility();
+    }
+
+    function updateColumnVisibility() {
+      document.querySelectorAll('.column-picker input[data-column]').forEach(input => {
+        const key = input.dataset.column;
+        const display = input.checked ? '' : 'none';
+
+        document
+          .querySelectorAll(`th[data-key="${key}"], td[data-key="${key}"]`)
+          .forEach(cell => {
+            cell.style.display = display;
+          });
+      });
+    }
+
+    function compareValues(a, b, key) {
+      const valueA = valueOrEmpty(a[key]).trim();
+      const valueB = valueOrEmpty(b[key]).trim();
+
+      return valueA.localeCompare(valueB, undefined, {
+        numeric: true,
+        sensitivity: 'base'
+      });
+    }
+
+    function sortData(data) {
+      if (!sortKey) {
+        return [...data];
+      }
+
+      return [...data].sort((a, b) => {
+        const result = compareValues(a, b, sortKey);
+        return sortDirection === 'asc' ? result : -result;
+      });
+    }
+
+    function updateSortIndicators() {
+      document.querySelectorAll('th[data-key]').forEach(header => {
+        header.removeAttribute('data-sort');
+        header.setAttribute('aria-sort', 'none');
+
+        if (header.dataset.key === sortKey) {
+          header.dataset.sort = sortDirection;
+          header.setAttribute('aria-sort', sortDirection === 'asc' ? 'ascending' : 'descending');
+        }
+      });
+    }
+
+    function handleSort(event) {
+      const key = event.currentTarget.dataset.key;
+
+      if (sortKey === key) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortKey = key;
+        sortDirection = 'asc';
+      }
+
+      updateSortIndicators();
+      renderTable(sortData(filteredAdvisories));
+    }
+
+    function filterValue(id) {
+      return document.getElementById(id).value.trim().toLowerCase();
+    }
+
+    function includesFilter(value, filter) {
+      return valueOrEmpty(value).toLowerCase().includes(filter);
+    }
+
+    function applyFilters() {
+      const filters = {
+        advisory: filterValue('advisoryFilter'),
+        releaseDate: filterValue('releaseDateFilter'),
+        title: filterValue('titleFilter'),
+        cve: filterValue('cveFilter'),
+        cvssSeverity: filterValue('cvssSeverityFilter'),
+        cvssString: filterValue('cvssStringFilter'),
+        product: filterValue('productFilter'),
+        version: filterValue('versionFilter'),
+        mainSdk: filterValue('mainSdkFilter'),
+        mainSdkVersion: filterValue('mainSdkVersionFilter'),
+        flags: filterValue('flagsFilter')
+      };
+
+      filteredAdvisories = advisories.filter(item =>
+        includesFilter(item.advisory, filters.advisory) &&
+        includesFilter(item.release_date, filters.releaseDate) &&
+        includesFilter(item.title, filters.title) &&
+        includesFilter(item.cve, filters.cve) &&
+        includesFilter(item.cvss_severity, filters.cvssSeverity) &&
+        includesFilter(item.cvss_string, filters.cvssString) &&
+        includesFilter(item.product, filters.product) &&
+        includesFilter(item.version, filters.version) &&
+        includesFilter(item.main_sdk, filters.mainSdk) &&
+        includesFilter(item.main_sdk_impacted_version, filters.mainSdkVersion) &&
+        includesFilter(item.flags, filters.flags)
+      );
+
+      updateResultCount();
+      renderTable(sortData(filteredAdvisories));
+    }
+
+    document.querySelectorAll('.filter-panel input[type="text"]').forEach(input => {
+      input.addEventListener('input', applyFilters);
     });
-  }
 
-  function applyFilters() {
-    const advisory = document.getElementById('advisoryFilter').value.toLowerCase();
-    const title = document.getElementById('titleFilter').value.toLowerCase();
-    const cve = document.getElementById('cveFilter').value.toLowerCase();
-    const product = document.getElementById('productFilter').value.toLowerCase();
-    const fix = document.getElementById('fixFilter').value.toLowerCase();
-    const flags = document.getElementById('flagsFilter').value.toLowerCase();
+    document.querySelectorAll('th[data-key]').forEach(header => {
+      header.addEventListener('click', handleSort);
+    });
 
-    const filtered = advisories.filter(item =>
-      item.advisory.toLowerCase().includes(advisory) &&
-      item.title.toLowerCase().includes(title) &&
-      item.cve.toLowerCase().includes(cve) &&
-      item.product.toLowerCase().includes(product) &&
-      item.version.toLowerCase().includes(fix) &&
-      item.flags.toLowerCase().includes(flags)
-    );
+    document.querySelectorAll('.column-picker input[data-column]').forEach(input => {
+      input.addEventListener('change', updateColumnVisibility);
+    });
 
-    renderTable(filtered);
-  }
-
-  document.getElementById('advisoryFilter').addEventListener('input', applyFilters);
-  document.getElementById('titleFilter').addEventListener('input', applyFilters);
-  document.getElementById('cveFilter').addEventListener('input', applyFilters);
-  document.getElementById('productFilter').addEventListener('input', applyFilters);
-  document.getElementById('fixFilter').addEventListener('input', applyFilters);
-  document.getElementById('flagsFilter').addEventListener('input', applyFilters);
-
-  loadData();
-</script>
-
+    loadData().catch(error => {
+      console.error(error);
+      document.getElementById('resultCount').textContent = 'Unable to load advisories';
+      document.getElementById('tableBody').innerHTML = `
+        <tr class="error-row"><td colspan="11">${escapeHtml(error.message)}</td></tr>
+      `;
+    });
+  </script>
 </body>
 </html>
