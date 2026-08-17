@@ -34,6 +34,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add docs/*
-          git add Advisories/*.md5
+          git add Advisories/*/*.md5
           git commit -m "Update dashboard and MD5 files" || exit 0
           git push
