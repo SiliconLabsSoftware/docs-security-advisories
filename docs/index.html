@@ -202,7 +202,49 @@
       font-weight: 700;
     }
 
-    input[type="text"] {
+    .severity-field {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .severity-field legend {
+      margin: 0 0 6px;
+      padding: 0;
+      color: #454b52;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .severity-filter {
+      display: flex;
+      min-height: 40px;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 10px;
+      padding: 6px 10px;
+      border: 1px solid var(--sl-border-strong);
+      border-radius: var(--radius-sm);
+      background: white;
+    }
+
+    .severity-filter label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .severity-filter input[type="checkbox"] {
+      margin: 0;
+      accent-color: var(--sl-red);
+    }
+
+    input[type="text"],
+    select {
       width: 100%;
       min-height: 40px;
       padding: 8px 11px;
@@ -219,11 +261,13 @@
       color: #9aa0a6;
     }
 
-    input[type="text"]:hover {
+    input[type="text"]:hover,
+    select:hover {
       border-color: #aeb4ba;
     }
 
-    input[type="text"]:focus {
+    input[type="text"]:focus,
+    select:focus {
       border-color: var(--sl-red);
       box-shadow: 0 0 0 3px rgba(215, 25, 32, 0.08);
       outline: none;
@@ -588,12 +632,18 @@
         </div>
         <div class="filter-field">
           <label for="productFilter">Product</label>
-          <input type="text" id="productFilter" placeholder="Search product">
+          <input type="text" id="productFilter" list="productOptions" placeholder="Search or select a product">
+          <datalist id="productOptions"></datalist>
         </div>
-        <div class="filter-field">
-          <label for="cvssSeverityFilter">CVSS Severity</label>
-          <input type="text" id="cvssSeverityFilter" placeholder="Critical, High, Medium…">
-        </div>
+        <fieldset class="filter-field severity-field">
+          <legend>CVSS Severity</legend>
+          <div class="severity-filter" id="cvssSeverityFilter">
+            <label><input type="checkbox" value="low"> Low</label>
+            <label><input type="checkbox" value="medium"> Medium</label>
+            <label><input type="checkbox" value="high"> High</label>
+            <label><input type="checkbox" value="critical"> Critical</label>
+          </div>
+        </fieldset>
       </div>
 
       <details class="advanced-filters">
@@ -611,17 +661,21 @@
             <label for="versionFilter">Impacted Version</label>
             <input type="text" id="versionFilter" placeholder="Filter impacted version">
           </div>
-          <div class="filter-field">
-            <label for="mainSdkFilter">Main SDK</label>
-            <input type="text" id="mainSdkFilter" placeholder="Filter main SDK">
-          </div>
+          <fieldset class="filter-field severity-field">
+            <legend>Main SDK</legend>
+            <div class="severity-filter" id="mainSdkFilter">
+              <label><input type="checkbox" value="gsdk"> GSDK</label>
+              <label><input type="checkbox" value="sisdk"> SiSDK</label>
+            </div>
+          </fieldset>
           <div class="filter-field">
             <label for="mainSdkVersionFilter">Main SDK Impacted Version</label>
             <input type="text" id="mainSdkVersionFilter" placeholder="Filter SDK version">
           </div>
           <div class="filter-field">
             <label for="flagsFilter">Flags</label>
-            <input type="text" id="flagsFilter" placeholder="Filter flags">
+            <input type="text" id="flagsFilter" list="flagsOptions" placeholder="Search or select a flag">
+            <datalist id="flagsOptions"></datalist>
           </div>
         </div>
       </details>
@@ -701,6 +755,56 @@
       return `<span class="severity-badge severity-${className}">${escapeHtml(label)}</span>`;
     }
 
+    function populateProductFilter() {
+      const counts = new Map();
+
+      advisories.forEach(item => {
+        const product = valueOrEmpty(item.product).trim();
+        if (!product || product === '-') return;
+
+        counts.set(product, (counts.get(product) || 0) + 1);
+      });
+
+      const duplicateProducts = [...counts.entries()]
+        .filter(([, count]) => count > 1)
+        .map(([product]) => product)
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+      const datalist = document.getElementById('productOptions');
+      datalist.innerHTML = '';
+
+      duplicateProducts.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product;
+        datalist.appendChild(option);
+      });
+    }
+
+    function populateFlagsFilter() {
+      const counts = new Map();
+
+      advisories.forEach(item => {
+        const flags = valueOrEmpty(item.flags).trim();
+        if (!flags || flags === '-' || flags.includes(',')) return;
+
+        counts.set(flags, (counts.get(flags) || 0) + 1);
+      });
+
+      const duplicateFlags = [...counts.entries()]
+        .filter(([, count]) => count > 1)
+        .map(([flags]) => flags)
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+      const datalist = document.getElementById('flagsOptions');
+      datalist.innerHTML = '';
+
+      duplicateFlags.forEach(flags => {
+        const option = document.createElement('option');
+        option.value = flags;
+        datalist.appendChild(option);
+      });
+    }
+
     async function loadData() {
       const response = await fetch('dashboard.json');
 
@@ -710,6 +814,8 @@
 
       advisories = await response.json();
       filteredAdvisories = [...advisories];
+      populateProductFilter();
+      populateFlagsFilter();
       updateSummary();
       updateResultCount();
       updateSortIndicators();
@@ -718,9 +824,21 @@
 
     function updateSummary() {
       const normalizedSeverity = item => valueOrEmpty(item.cvss_severity).trim().toLowerCase();
-      document.getElementById('totalAdvisories').textContent = advisories.length.toLocaleString();
-      document.getElementById('criticalAdvisories').textContent = advisories.filter(item => normalizedSeverity(item) === 'critical').length.toLocaleString();
-      document.getElementById('highAdvisories').textContent = advisories.filter(item => normalizedSeverity(item) === 'high').length.toLocaleString();
+      const uniqueAdvisoryCount = new Set(
+        advisories
+          .map(item => valueOrEmpty(item.advisory).trim())
+          .filter(Boolean)
+      ).size;
+      const uniqueAdvisoriesBySeverity = severity => new Set(
+        advisories
+          .filter(item => normalizedSeverity(item) === severity)
+          .map(item => valueOrEmpty(item.advisory).trim())
+          .filter(Boolean)
+      ).size;
+
+      document.getElementById('totalAdvisories').textContent = uniqueAdvisoryCount.toLocaleString();
+      document.getElementById('criticalAdvisories').textContent = uniqueAdvisoriesBySeverity('critical').toLocaleString();
+      document.getElementById('highAdvisories').textContent = uniqueAdvisoriesBySeverity('high').toLocaleString();
 
       const latest = [...advisories]
         .map(item => valueOrEmpty(item.release_date).trim())
@@ -731,8 +849,15 @@
     }
 
     function updateResultCount() {
-      const total = advisories.length;
-      const shown = filteredAdvisories.length;
+      const uniqueAdvisoryCount = data => new Set(
+        data
+          .map(item => valueOrEmpty(item.advisory).trim())
+          .filter(Boolean)
+      ).size;
+
+      const total = uniqueAdvisoryCount(advisories);
+      const shown = uniqueAdvisoryCount(filteredAdvisories);
+
       document.getElementById('resultCount').textContent = shown === total
         ? `${total.toLocaleString()} advisories`
         : `${shown.toLocaleString()} of ${total.toLocaleString()} advisories`;
@@ -761,6 +886,10 @@
                 : escapedCve;
             }).join(', ')
           : '—';
+        const cvssString = escapeHtml(displayValue(item.cvss_string));
+        const cvssLink = item.cvss_url
+          ? `<a href="${escapeHtml(item.cvss_url)}" target="_blank" rel="noopener noreferrer">${cvssString}</a>`
+          : cvssString;
 
         const advisoryNumber = Number.parseInt(valueOrEmpty(item.advisory).replace(/^A-/, ''), 10);
         const advisoryRangeStart = Math.floor(advisoryNumber / 100) * 100;
@@ -776,7 +905,7 @@
           <td data-key="release_date">${escapeHtml(displayValue(item.release_date))}</td>
           <td data-key="title">${escapeHtml(displayValue(item.title))}</td>
           <td data-key="cvss_severity">${severityBadge(item.cvss_severity)}</td>
-          <td data-key="cvss_string" class="cvss-string">${escapeHtml(displayValue(item.cvss_string))}</td>
+          <td data-key="cvss_string" class="cvss-string">${cvssLink}</td>
           <td data-key="product">${escapeHtml(displayValue(item.product))}</td>
           <td data-key="version">${escapeHtml(displayValue(item.version))}</td>
           <td data-key="main_sdk">${escapeHtml(displayValue(item.main_sdk))}</td>
@@ -865,25 +994,33 @@
         releaseDate: filterValue('releaseDateFilter'),
         title: filterValue('titleFilter'),
         cve: filterValue('cveFilter'),
-        cvssSeverity: filterValue('cvssSeverityFilter'),
         cvssString: filterValue('cvssStringFilter'),
-        product: filterValue('productFilter'),
+        product: document.getElementById('productFilter').value.trim().toLowerCase(),
         version: filterValue('versionFilter'),
-        mainSdk: filterValue('mainSdkFilter'),
         mainSdkVersion: filterValue('mainSdkVersionFilter'),
         flags: filterValue('flagsFilter')
       };
+
+      const selectedSeverities = Array.from(
+        document.querySelectorAll('#cvssSeverityFilter input[type="checkbox"]:checked')
+      ).map(input => input.value.toLowerCase());
+
+      const selectedMainSdks = Array.from(
+        document.querySelectorAll('#mainSdkFilter input[type="checkbox"]:checked')
+      ).map(input => input.value.toLowerCase());
 
       filteredAdvisories = advisories.filter(item =>
         includesFilter(item.advisory, filters.advisory) &&
         includesFilter(item.release_date, filters.releaseDate) &&
         includesFilter(item.title, filters.title) &&
         includesFilter(item.cve, filters.cve) &&
-        includesFilter(item.cvss_severity, filters.cvssSeverity) &&
+        (selectedSeverities.length === 0 ||
+          selectedSeverities.includes(valueOrEmpty(item.cvss_severity).trim().toLowerCase())) &&
         includesFilter(item.cvss_string, filters.cvssString) &&
         includesFilter(item.product, filters.product) &&
         includesFilter(item.version, filters.version) &&
-        includesFilter(item.main_sdk, filters.mainSdk) &&
+        (selectedMainSdks.length === 0 ||
+          selectedMainSdks.includes(valueOrEmpty(item.main_sdk).trim().toLowerCase())) &&
         includesFilter(item.main_sdk_impacted_version, filters.mainSdkVersion) &&
         includesFilter(item.flags, filters.flags)
       );
@@ -896,12 +1033,24 @@
       input.addEventListener('input', applyFilters);
     });
 
+
+    document.querySelectorAll('#cvssSeverityFilter input[type="checkbox"], #mainSdkFilter input[type="checkbox"]').forEach(input => {
+      input.addEventListener('change', applyFilters);
+    });
+
     document.querySelectorAll('th[data-key]').forEach(header => {
       header.addEventListener('click', handleSort);
     });
 
     document.querySelectorAll('.column-picker input[data-column]').forEach(input => {
       input.addEventListener('change', updateColumnVisibility);
+    });
+
+    const columnPicker = document.querySelector('.column-picker');
+    document.addEventListener('click', event => {
+      if (columnPicker.open && !columnPicker.contains(event.target)) {
+        columnPicker.open = false;
+      }
     });
 
     loadData().catch(error => {
