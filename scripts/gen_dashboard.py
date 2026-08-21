@@ -36,6 +36,15 @@ def parse_cves(cve_cell):
     return results
 
 
+def parse_markdown_link(value):
+    """Return Markdown link text and URL, or the original text with no URL."""
+    value = value.strip()
+    match = re.fullmatch(r"\[([^]]+)\]\((https?://[^)]+)\)", value)
+    if match:
+        return match.group(1).strip(), match.group(2).strip()
+    return value, None
+
+
 def parse_markdown_row(line):
     """Split a Markdown table row into stripped cell values."""
     return [cell.strip() for cell in line.strip().strip("|").split("|")]
@@ -47,6 +56,7 @@ def parse_advisory(path):
     flags = None
     cvss_severity = None
     cvss_string = None
+    cvss_url = None
     release_date = None
 
     with open(path, encoding="utf-8") as f:
@@ -84,7 +94,12 @@ def parse_advisory(path):
             cvss_severity = line.partition(":")[2].strip() or None
 
         elif line.startswith("CVSS String:"):
-            cvss_string = line.partition(":")[2].strip() or None
+            cvss_value = line.partition(":")[2].strip()
+            if cvss_value:
+                cvss_string, cvss_url = parse_markdown_link(cvss_value)
+            else:
+                cvss_string = None
+                cvss_url = None
 
         # Supported Product Impact table formats:
         #   Product | Impacted Version | CVE
@@ -137,6 +152,7 @@ def parse_advisory(path):
                             "title": title,
                             "cvss_severity": cvss_severity,
                             "cvss_string": cvss_string,
+                            "cvss_url": cvss_url,
                             "product": product,
                             "version": version,
                             "main_sdk": main_sdk,
