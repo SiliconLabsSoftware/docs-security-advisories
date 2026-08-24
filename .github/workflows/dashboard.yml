@@ -29,11 +29,90 @@ jobs:
       - name: Generate dashboard
         run: python scripts/gen_dashboard.py
 
-      - name: Commit changes
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add docs/*
-          git add Advisories/*/*.md5
-          git commit -m "Update dashboard and MD5 files" || exit 0
-          git push
+      - name: Create GitHub-signed commit
+        uses: actions/github-script@v7
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+          EXPECTED_HEAD_OID: ${{ github.sha }}
+        with:
+          script: |
+            const fs = require("fs");
+            const { execFileSync } = require("child_process");
+
+            const git = (...args) =>
+              execFileSync("git", args, { encoding: "utf8" });
+
+            const splitNull = (value) =>
+              value.split("\0").filter(Boolean);
+
+            const tracked = splitNull(
+              git("diff", "--name-only", "-z", "--", "docs", "Advisories")
+            );
+            const untracked = splitNull(
+              git(
+                "ls-files",
+                "--others",
+                "--exclude-standard",
+                "-z",
+                "--",
+                "docs",
+                "Advisories"
+              )
+            );
+
+            const generatedFiles = [...new Set([...tracked, ...untracked])]
+              .filter(
+                (path) =>
+                  path.startsWith("docs/") ||
+                  (path.startsWith("Advisories/") && path.endsWith(".md5"))
+              )
+              .sort();
+
+            if (generatedFiles.length === 0) {
+              core.info("No dashboard or MD5 changes to commit.");
+              return;
+            }
+
+            const additions = [];
+            const deletions = [];
+
+            for (const path of generatedFiles) {
+              if (fs.existsSync(path)) {
+                additions.push({
+                  path,
+                  contents: fs.readFileSync(path).toString("base64"),
+                });
+              } else {
+                deletions.push({ path });
+              }
+            }
+
+            const result = await github.graphql(
+              `mutation($input: CreateCommitOnBranchInput!) {
+                createCommitOnBranch(input: $input) {
+                  commit {
+                    oid
+                    url
+                  }
+                }
+              }`,
+              {
+                input: {
+                  branch: {
+                    repositoryNameWithOwner: process.env.GITHUB_REPOSITORY,
+                    branchName: process.env.BRANCH_NAME,
+                  },
+                  message: {
+                    headline: "Update dashboard and MD5 files",
+                  },
+                  fileChanges: {
+                    ...(additions.length > 0 && { additions }),
+                    ...(deletions.length > 0 && { deletions }),
+                  },
+                  expectedHeadOid: process.env.EXPECTED_HEAD_OID,
+                },
+              }
+            );
+
+            const commit = result.createCommitOnBranch.commit;
+            core.info(`Created signed commit ${commit.oid}: ${commit.url}`);
