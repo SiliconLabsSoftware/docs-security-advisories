@@ -4396,7 +4396,7 @@
   },
   {
     "advisory": "A-00000576",
-    "release_date": "2026-08-06",
+    "release_date": "2026-09-08",
     "flags": "Bluetooth",
     "title": "Bluetooth denial-of-service and authentication bypass vulnerabilities",
     "cvss_severity": "High",
@@ -4411,7 +4411,7 @@
   },
   {
     "advisory": "A-00000576",
-    "release_date": "2026-08-06",
+    "release_date": "2026-09-08",
     "flags": "Bluetooth",
     "title": "Bluetooth denial-of-service and authentication bypass vulnerabilities",
     "cvss_severity": "High",
@@ -4421,12 +4421,12 @@
     "version": "All released versions",
     "main_sdk": "-",
     "main_sdk_impacted_version": "-",
-    "cve": "CVE-2026-65935, CVE-2026-65936, CVE-2026-16179",
-    "cve_url": "https://nvd.nist.gov/vuln/detail/CVE-2026-65935, https://nvd.nist.gov/vuln/detail/CVE-2026-65936, https://nvd.nist.gov/vuln/detail/CVE-2026-16179"
+    "cve": "CVE-2026-65935, CVE-2026-65936, CVE-2026-16769",
+    "cve_url": "https://nvd.nist.gov/vuln/detail/CVE-2026-65935, https://nvd.nist.gov/vuln/detail/CVE-2026-65936, https://nvd.nist.gov/vuln/detail/CVE-2026-16769"
   },
   {
     "advisory": "A-00000576",
-    "release_date": "2026-08-06",
+    "release_date": "2026-09-08",
     "flags": "Bluetooth",
     "title": "Bluetooth denial-of-service and authentication bypass vulnerabilities",
     "cvss_severity": "High",
@@ -4436,8 +4436,8 @@
     "version": "All released versions",
     "main_sdk": "-",
     "main_sdk_impacted_version": "-",
-    "cve": "CVE-2026-65935, CVE-2026-65936, CVE-2026-16179",
-    "cve_url": "https://nvd.nist.gov/vuln/detail/CVE-2026-65935, https://nvd.nist.gov/vuln/detail/CVE-2026-65936, https://nvd.nist.gov/vuln/detail/CVE-2026-16179"
+    "cve": "CVE-2026-65935, CVE-2026-65936, CVE-2026-16769",
+    "cve_url": "https://nvd.nist.gov/vuln/detail/CVE-2026-65935, https://nvd.nist.gov/vuln/detail/CVE-2026-65936, https://nvd.nist.gov/vuln/detail/CVE-2026-16769"
   },
   {
     "advisory": "A-00000577",
@@ -4618,5 +4618,35 @@
     "main_sdk_impacted_version": "2026.6.0 and earlier",
     "cve": "CVE-2026-17610",
     "cve_url": "https://nvd.nist.gov/vuln/detail/CVE-2026-17610"
+  },
+  {
+    "advisory": "A-00000586",
+    "release_date": "2026-09-10",
+    "flags": "Security",
+    "title": "Three Vulnerabilities in the CP210x Windows Driver",
+    "cvss_severity": "High",
+    "cvss_string": "CVSS:4.0/AV:P/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+    "cvss_url": "https://www.first.org/cvss/calculator/4.0#CVSS:4.0/AV:P/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+    "product": "CP210x Universal Windows Driver",
+    "version": "v11.5.0 and earlier (Windows 10 and 11)",
+    "main_sdk": "-",
+    "main_sdk_impacted_version": "-",
+    "cve": "CVE-2026-15418, CVE-2026-15419",
+    "cve_url": "https://nvd.nist.gov/vuln/detail/CVE-2026-15418, https://nvd.nist.gov/vuln/detail/CVE-2026-15419"
+  },
+  {
+    "advisory": "A-00000586",
+    "release_date": "2026-09-10",
+    "flags": "Security",
+    "title": "Three Vulnerabilities in the CP210x Windows Driver",
+    "cvss_severity": "High",
+    "cvss_string": "CVSS:4.0/AV:P/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+    "cvss_url": "https://www.first.org/cvss/calculator/4.0#CVSS:4.0/AV:P/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+    "product": "CP210x Windows Driver",
+    "version": "All versions (Windows 8)",
+    "main_sdk": "-",
+    "main_sdk_impacted_version": "-",
+    "cve": "CVE-2026-15417, CVE-2026-15418, CVE-2026-15419",
+    "cve_url": "https://nvd.nist.gov/vuln/detail/CVE-2026-15417, https://nvd.nist.gov/vuln/detail/CVE-2026-15418, https://nvd.nist.gov/vuln/detail/CVE-2026-15419"
   }
 ]
