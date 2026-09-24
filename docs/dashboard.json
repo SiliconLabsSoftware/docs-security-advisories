@@ -4471,7 +4471,7 @@
   },
   {
     "advisory": "A-00000579",
-    "release_date": "2026-06-25",
+    "release_date": "2026-09-24",
     "flags": "Zigbee",
     "title": "Zigbee command handling vulnerabilities in Zigbee Application Framework (ZAP)",
     "cvss_severity": "High",
@@ -4486,7 +4486,7 @@
   },
   {
     "advisory": "A-00000579",
-    "release_date": "2026-06-25",
+    "release_date": "2026-09-24",
     "flags": "Zigbee",
     "title": "Zigbee command handling vulnerabilities in Zigbee Application Framework (ZAP)",
     "cvss_severity": "High",
@@ -4546,7 +4546,7 @@
   },
   {
     "advisory": "A-00000583",
-    "release_date": "2026-08-20",
+    "release_date": "2026-09-24",
     "flags": "Bluetooth Mesh",
     "title": "Buffer overflow vulnerability in Bluetooth Mesh extended advertisement handling",
     "cvss_severity": "High",
@@ -4561,7 +4561,7 @@
   },
   {
     "advisory": "A-00000583",
-    "release_date": "2026-08-20",
+    "release_date": "2026-09-24",
     "flags": "Bluetooth Mesh",
     "title": "Buffer overflow vulnerability in Bluetooth Mesh extended advertisement handling",
     "cvss_severity": "High",
