@@ -4843,5 +4843,20 @@
     "main_sdk_impacted_version": "-",
     "cve": "CVE-2026-107359",
     "cve_url": null
+  },
+  {
+    "advisory": "A-00000595",
+    "release_date": "2026-10-02",
+    "flags": "Other",
+    "title": "Privileged search-path hijacking in CP210x Universal Windows Driver",
+    "cvss_severity": "High",
+    "cvss_string": "[CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:P/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N|Common Vulnerability Scoring System Version 4.0 Calculator]",
+    "cvss_url": null,
+    "product": "CP210x Universal Windows Driver",
+    "version": "11.6.0 (prior to 2026-OCT-02 release) and earlier",
+    "main_sdk": null,
+    "main_sdk_impacted_version": null,
+    "cve": "CVE-2026-112767",
+    "cve_url": null
   }
 ]
