@@ -4850,13 +4850,13 @@
     "flags": "Other",
     "title": "Privileged search-path hijacking in CP210x Universal Windows Driver",
     "cvss_severity": "High",
-    "cvss_string": "[CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:P/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N|Common Vulnerability Scoring System Version 4.0 Calculator]",
-    "cvss_url": null,
+    "cvss_string": "CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:P/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+    "cvss_url": "https://www.first.org/cvss/calculator/4.0#CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:P/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
     "product": "CP210x Universal Windows Driver",
     "version": "11.6.0 (prior to 2026-OCT-02 release) and earlier",
-    "main_sdk": null,
-    "main_sdk_impacted_version": null,
+    "main_sdk": "-",
+    "main_sdk_impacted_version": "-",
     "cve": "CVE-2026-112767",
-    "cve_url": null
+    "cve_url": "https://nvd.nist.gov/vuln/detail/cve-2026-112767"
   }
 ]
